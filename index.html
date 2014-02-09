@@ -374,7 +374,7 @@ function animate() {
 
   requestAnimationFrame(animate);
   //if ( keyboard.pressed("Q") ){//Stop rings
-  if ( RB ){//Stop rings and before var init?!?!RB?
+  if ( RB || keyboard.pressed("Q")){//Stop rings and before var init?!?!RB?
 
   ringplat.rotation.y /= 2;ringplat.rotation.z /= 2;  
   ringplat.rotation.x /= 2;ringplat2.rotation.y /= 2;
