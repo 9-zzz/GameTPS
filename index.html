@@ -54,7 +54,7 @@ body {
 </head>
 <body>
 <script src="js/three.min.js"></script>
-<script src="js/Gamepad.js"></script>
+<!--<script src="js/Gamepad.js"></script>-->
 <script src="js/controls/PointerLockControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/Stats.js"></script>
@@ -244,6 +244,20 @@ flag1 = true;
   //Load in the mesh and add it to the scene. essentially all my custom Blender meshes.
   var loader = new THREE.JSONLoader();//where the magic happens!
 
+loader.load( 'models/u.js', function(geometry, materials){
+
+for(var i =0;i<materials.length;i++){
+	materials[i].shading = THREE.FlatShading;
+}
+    var material = new THREE.MeshFaceMaterial({shading: THREE.FlatShading});
+    var  u = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+    //  var  u = new THREE.Mesh(geometry, materials);
+    u.scale.set(6, 6, 6);
+    u.position.set(0, 0, -90);
+    scene.add(u);
+});
+
+
 loader.load( "models/winner.js", function(geometry){
 	var material = new THREE.MeshPhongMaterial({shading: THREE.FlatShading, color: 0xFF0077});
     	winner = new THREE.Mesh(geometry, material);
@@ -353,7 +367,7 @@ function animate() {
 
   requestAnimationFrame(animate);
   //if ( keyboard.pressed("Q") ){//Stop rings
-  if ( RB && flag1){//Stop rings and before var init?!?!RB?
+  if ( RB ){//Stop rings and before var init?!?!RB?
 
   ringplat.rotation.y /= 2;ringplat.rotation.z /= 2;  
   ringplat.rotation.x /= 2;ringplat2.rotation.y /= 2;
@@ -368,18 +382,18 @@ flag1 = false;
 //XBOX CONTROLLER CODE HAD TO EXCLUDE THE KEYBOARD INPUT
 RTval = gamePad.getAxis(gamePad.RT);
 LTval = gamePad.getAxis(gamePad.LT);
-LVval = gamePad.getAxis(gamePad.LV);//leftStick
+LVval = gamePad.getAxis(gamePad.LV);//leftStick output
 LHval = gamePad.getAxis(gamePad.LH);
-RVval = gamePad.getAxis(gamePad.RV);//rightStick
+RVval = gamePad.getAxis(gamePad.RV);//rightStick output
 RHval = gamePad.getAxis(gamePad.RH);
 RB = gamePad.getButton(gamePad.RB);//left-right-buttons
 LB = gamePad.getButton(gamePad.LB);
 
-p.position.z += LVval * 12;//Leftstick movement
-p.position.x += LHval * 12;
+if(LVval > 0.3 || LVval < -0.3)p.position.z += LVval * 12;//Leftstick movement
+if(LHval > 0.3 || LHval < -0.3)p.position.x += LHval * 12;
 
-camera.rotation.x -= RVval*0.025;//Rightstick movement
-camera.rotation.y -= RHval*0.025;
+if(RVval > 0.1 || RVval < -0.1)camera.rotation.x -= RVval*0.025;//Rightstick movement
+if(RHval > 0.1 || RHval < -0.1)camera.rotation.y -= RHval*0.025;
 
   /*if ( gamePad.getButton(gamePad.A)==1 && flag ){
 	p.position.y += 20;  
