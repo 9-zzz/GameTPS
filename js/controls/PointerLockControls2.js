@@ -1,6 +1,5 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+//@author mrdoob / http://mrdoob.com/ Modified heavily by me Shahan
+
 
 THREE.PointerLockControls = function ( camera ) {
 
@@ -40,6 +39,8 @@ THREE.PointerLockControls = function ( camera ) {
 		pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
 
 	};
+
+
 
 	var onKeyDown = function ( event ) {
 
