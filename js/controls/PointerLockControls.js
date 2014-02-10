@@ -2,7 +2,8 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.PointerLockControls = function ( camera ) {
+
+THREE.PointerLockControls = function ( camera , gamePad) {
 
 	var scope = this;
 
@@ -145,6 +146,20 @@ THREE.PointerLockControls = function ( camera ) {
 	}();
 
 	this.update = function ( delta ) {
+
+//SHAHAN
+		if(scope.gamePad === undefined){ console.log("this thing is null");}
+
+		/*
+		var BA = gamePad.getButton(gamePad.A);
+		if ( BA == 1 && canJump == true){ velocity.y += 20;//three equals signs?
+				canJump = false;
+		}else if(BA == 0 && canJump == false){	velocity.y = velocity.y/2;
+		canJump = true;
+		}
+		*/
+
+
 
 		if ( scope.enabled === false ) return;
 

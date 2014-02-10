@@ -294,7 +294,7 @@ function init() {
 			scene.add(p);
 			camera.position.z = 0; // pull it back
 			camera.position.y = 0; // pull it back
-			controls = new THREE.PointerLockControls(p);
+			controls = new THREE.PointerLockControls(p, gamePad);
 			//controls = new THREE.PointerLockControls(p);
 			scene.add( controls.getObject() );
 			});
