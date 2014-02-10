@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+	<head>
+		<title>sample</title>
+		<meta charset="utf-8">
+		<style>
+			div.field {
+				border: 1px solid black;
+				height: 20px;
+				width: 100px;
+				text-align: center;
+				line-height: 20px;
+				font-size; 16px;
+			}
+		</style>
+	</head>
+	<body>
+		<div style="margin:0px auto;width:200px;">
+		</div>
+		A:
+		<div class=field id=A_BTN>
+			0
+		</div>
+		B:
+		<div class=field id=B_BTN>
+			0
+		</div>
+		X:
+		<div class=field id=X_BTN>
+			0
+		</div>
+		Y:
+		<div class=field id=Y_BTN>
+			0
+		</div>
+		LB:
+		<div class=field id=LB_BTN>
+			0
+		</div>
+		RB:
+		<div class=field id=RB_BTN>
+			0
+		</div>
+		LT:
+		<div class=field id=LT_AXIS>
+			0
+		</div>
+		RT:
+		<div class=field id=RT_AXIS>
+			0
+		</div>
+		LS:
+		<div class=field id=LS_BTN>
+			0
+		</div>
+		RS:
+		<div class=field id=RS_BTN>
+			0
+		</div>
+		UP:
+		<div class=field id=UP_BTN>
+			0
+		</div>
+		DOWN:
+		<div class=field id=DOWN_BTN>
+			0
+		</div>
+		LEFT:
+		<div class=field id=LEFT_BTN>
+			0
+		</div>
+		RIGHT:
+		<div class=field id=RIGHT_BTN>
+			0
+		</div>
+		SELECT:
+		<div class=field id=SEL_BTN>
+			0
+		</div>
+		START:
+		<div class=field id=START_BTN>
+			0
+		</div>
+		HOME:
+		<div class=field id=HOME_BTN>
+			0
+		</div>
+
+		LH:
+		<div class=field id=LH_AXIS>
+			0
+		</div>
+		LV:
+		<div class=field id=LV_AXIS>
+			0
+		</div>
+		RH:
+		<div class=field id=RH_AXIS>
+			0
+		</div>
+		RV:
+		<div class=field id=RV_AXIS>
+			0
+		</div>
+		
+		<script src="js/Gamepad.js"></script>
+		<script>
+			var player1 = new Gamepad();
+			player1.connect();
+
+			function loop() {
+				A_BTN.innerHTML = player1.getButton(player1.A);
+				B_BTN.innerHTML = player1.getButton(player1.B);
+				X_BTN.innerHTML = player1.getButton(player1.X);
+				Y_BTN.innerHTML = player1.getButton(player1.Y);
+				LB_BTN.innerHTML = player1.getButton(player1.LB);
+				RB_BTN.innerHTML = player1.getButton(player1.RB);
+				UP_BTN.innerHTML = player1.getButton(player1.UP);
+				DOWN_BTN.innerHTML = player1.getButton(player1.DOWN);
+				LEFT_BTN.innerHTML = player1.getButton(player1.LEFT);
+				RIGHT_BTN.innerHTML = player1.getButton(player1.RIGHT);
+				HOME_BTN.innerHTML = player1.getButton(player1.HOME);
+				SEL_BTN.innerHTML = player1.getButton(player1.SEL);
+				START_BTN.innerHTML = player1.getButton(player1.START);
+				LS_BTN.innerHTML = player1.getButton(player1.LS);
+				RS_BTN.innerHTML = player1.getButton(player1.RS);
+
+				LH_AXIS.innerHTML = player1.getAxis(player1.LH);
+				LV_AXIS.innerHTML = player1.getAxis(player1.LV);
+				RH_AXIS.innerHTML = player1.getAxis(player1.RH);
+				RV_AXIS.innerHTML = player1.getAxis(player1.RV);
+				LT_AXIS.innerHTML = player1.getAxis(player1.LT);
+				RT_AXIS.innerHTML = player1.getAxis(player1.RT);
+
+				setTimeout(loop, 25);
+			}
+			loop();
+		</script>
+	</body>
+</html>
