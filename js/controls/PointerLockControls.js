@@ -290,15 +290,6 @@ THREE.PointerLockControls = function ( camera ) {
 				if ( canJump === true ) velocity.y += 20;//three equals signs?
 				canJump = false;
 				break;
-        if(gamePad.getButton(gamePad.A)==1){
-		if ( canJump === true ) velocity.y += 20;//three equals signs?
-				canJump = false;
-	}else{
-		velocity.y = velocity.y/2;
-		canJump = false;
-	}
-
-		}
 
 	};
 
