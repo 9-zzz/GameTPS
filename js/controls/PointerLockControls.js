@@ -6,6 +6,9 @@
 THREE.PointerLockControls = function ( camera , gamePad) {
 
 	var scope = this;
+	if (gamePad == undefined) {
+		console.log("sdfasdfasdfasdfasdfasdf\n");
+	}
 
 	camera.rotation.set( 0, 0, 0 );
 
