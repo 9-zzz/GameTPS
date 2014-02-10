@@ -290,6 +290,7 @@ THREE.PointerLockControls = function ( camera ) {
 				if ( canJump === true ) velocity.y += 20;//three equals signs?
 				canJump = false;
 				break;
+		}
 
 	};
 
