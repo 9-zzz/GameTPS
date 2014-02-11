@@ -65,6 +65,9 @@ cursor: pointer;
 <!--RIFIN' OVER HERE!-->
 <script src="js/OculusRiftEffect.js"></script>
 <script src="js/OculusControls.js"></script>
+
+<script src="js/shaders/FresnelShader.js"></script>
+
 <!-- jQuery code to display an information button and box when clicked. -->
 <script src="js/jquery-1.9.1.js"></script>
 <script src="js/jquery-ui.js"></script>
@@ -73,19 +76,22 @@ cursor: pointer;
 <script src="js/info.js"></script>
 <div id="infoButton"></div>
 <div id="infoBox" title="CREDITS">
-<br><h1>
-Timothy Yong<a href="https://github.com/timothyyong"target="_blank"> - GitHub.com/TimothyYong</a><br></br>
-Patrick Wu<a href="https://soundcloud.com/synchretik"target="_blank"> - SoundCloud.com/Synchretik</a><br></br>
-Shahan Akhter<a href="https://github.com/s-haha-n"target="_blank"> - GitHub.com/s-haha-n</a><br></br>
-</h1></br>
+<h3>
+Timothy Yong - <a href="https://github.com/timothyyong"target="_blank">GitHub.com/TimothyYong</a><br></br>
+Patrick Wu - <a href="https://soundcloud.com/synchretik"target="_blank">SoundCloud.com/Synchretik</a><br></br>
+Shahan Akhter - <a href="https://github.com/s-haha-n"target="_blank">GitHub.com/s-haha-n</a>
+</h3>
+<audio controls loop align="right">
+<embed  align="right"</embed>
+<source src="audio/NANANANA.mp3" type="audio/mpeg">
+Your browser does not support the audio element BRO!
+</audio>
 </div>
 <div id="ThreeJS" style="z=index: 2;"></div>
 <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <!-- jQuery code to display an information button and box when clicked. -->
 
 <div id="blocker">
-
-
 <div id="instructions">
 <img src="images/dizlogo.gif">
 <br />
@@ -94,24 +100,18 @@ Shahan Akhter<a href="https://github.com/s-haha-n"target="_blank"> - GitHub.com/
 <font color="red"><span style="font-size:30px">GOAL: TRY TO LAND ON THE RED CUBE</span></font>
 <br />
 <img src="images/cntr.png">
-<!-- autoplay loop -->
-
-<div>
-<audio controls muted float:"right">
-<embed  align="right"</embed>
-<source src="audio/NANANANA.mp3" type="audio/mpeg">
-Your browser does not support the audio element BRO!
-</audio>
-</div>
 
 </div>
 </div>
 <script>
 //global vars
+var mirrorCube, mirrorCubeCamera; // for mirror material
+var mirrorSphere, mirrorSphereCamera; // for mirror material
+var container;
 var flag1;
 var LTval, RTval, LVval, LHval, RVval, RHval, RB,LB;//XBOX VARS
 var gamePad, mov7, mat , geo, viewM;
-var camera, scene, renderer, controls, cube, ray, world, body, mass, shape, timeStep = 1/60;
+var camera, scene, renderer, controls, ray, world, body, mass, shape, timeStep = 1/60;
 var winner,  bullet;
 var a = 1;
 var geometry, material, mesh;
@@ -120,14 +120,10 @@ var keyboard = new THREEx.KeyboardState();
 //custom meshes
 var p, ringplat, ringplatsty2;
 var ringplat2, ringplat3, ringplat4, ringplat5;
-var fling;
-var globalMaterial = new THREE.MeshLambertMaterial
-({
-shading: THREE.FlatShading, 
-color: 0xe0eFA0
-});
 var objects = [];//collideable objects
 var player_mesh, axis_mesh;
+var cube;
+
 
 var blocker = document.getElementById( 'blocker' );
 var instructions = document.getElementById( 'instructions' );
@@ -166,7 +162,7 @@ if ( havePointerLock ) {
 	document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
 	document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
 
-	instructions.addEventListener( 'click', function ( event ) {
+	instructions.addEventListener('click', function ( event ) {
 
 			instructions.style.display = 'none';
 
@@ -207,6 +203,7 @@ if ( havePointerLock ) {
 	instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
 
 }
+
 /*The above code was just for employing the THREE PointerLock which is what locks in the cursor and checks if 
   the browser can support it.  This code is straight from the example in the documentation on threejs.org
   it also creates a "blocker" in it that dims the screen and has the controls image and game title on it.
@@ -223,6 +220,23 @@ function init() {
 
 	scene = new THREE.Scene();
 	scene.fog = new THREE.Fog( 0xF4E8FF, 0, 1250 );
+
+/* axes skybox
+        var imagePrefix = "images/trans-";
+        var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
+        var imageSuffix = ".png";
+        var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 ); 
+
+        var materialArray = [];
+        for (var i = 0; i < 6; i++)
+        materialArray.push( new THREE.MeshBasicMaterial({
+          map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+          side: THREE.BackSide
+        }));
+        var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+        var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+        scene.add( skyBox );
+*///axes skybox end.
 
 	var light = new THREE.DirectionalLight( 0xffffff, 1.5 );
 	light.position.set( 1, 1, 1 );
@@ -244,8 +258,6 @@ function init() {
 	   var effect = new THREE.OculusRiftEffect(renderer, {worldScale: 100});
 	   effect.setSize(width, height);
 	 */
-	flag1 = true;
-
 	player_mesh = new THREE.Mesh(
 			new THREE.SphereGeometry(10, 39, 39), 
 			new THREE.MeshBasicMaterial({transparent: true, opacity: 0.15,wireframe:true}));
@@ -279,8 +291,14 @@ function init() {
 			winner.scale.set(.25,.25,.25);
 			});
 
-	loader.load( "models/ava.js", function(geometry){//CONUNDRUM! EMPLOY OC CONT
-			p = new THREE.Mesh(geometry, globalMaterial);
+	loader.load( "models/ava.js", function(geometry, materials){//CONUNDRUM! EMPLOY OC CONT
+		for(var i =0;i<materials.length;i++)
+		{
+		materials[i].shading = THREE.FlatShading;
+		}
+		var material = new THREE.MeshFaceMaterial({shading: THREE.FlatShading});
+		p = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+
 			p.add(bullet);
 			//p.add(viewM);
 			bullet.position.y = 11;
@@ -291,10 +309,9 @@ function init() {
 			//viewM.add(camera);
 			//viewM.add(p);
 			scene.add(p);
-			scene.add(p);
 			camera.position.z = 0; // pull it back
 			camera.position.y = 0; // pull it back
-			controls = new THREE.PointerLockControls(p, gamePad);
+			controls = new THREE.PointerLockControls(p);
 			//controls = new THREE.PointerLockControls(p);
 			scene.add( controls.getObject() );
 			});
@@ -368,9 +385,52 @@ function init() {
 	objects.push(mov6);
 	objects.push(mov7);
 
+	// CUSTOM //for bubble
+	this.refractSphereCamera = new THREE.CubeCamera( 0.1, 5000, 512 );
+	scene.add( refractSphereCamera );
+
+	var fShader = THREE.FresnelShader;
+
+	var fresnelUniforms = 
+	{
+		"mRefractionRatio": { type: "f", value: 1.02 },
+		"mFresnelBias": 	{ type: "f", value: 0.1 },
+		"mFresnelPower": 	{ type: "f", value: 2.0 },
+		"mFresnelScale": 	{ type: "f", value: 1.0 },
+		"tCube": 			{ type: "t", value: refractSphereCamera.renderTarget } //  textureCube }
+	};
+
+	// create custom material for the shader
+	var customMaterial = new THREE.ShaderMaterial( 
+	{
+	    uniforms: 		fresnelUniforms,
+		vertexShader:   fShader.vertexShader,
+		fragmentShader: fShader.fragmentShader
+	}   );
+
+	var sphereGeometry = new THREE.SphereGeometry( 900, 64, 32 );
+	this.sphere = new THREE.Mesh( sphereGeometry, customMaterial );
+	sphere.position.set(0, 5000, 0);
+	scene.add(sphere);
+	refractSphereCamera.position = sphere.position;
+	//for bubble end
+
+//for mirror cube way easier, no import animation 3 lines
+var cubeGeom = new THREE.CubeGeometry(100, 100, 10, 1, 1, 1);
+	mirrorCubeCamera = new THREE.CubeCamera( 0.1, 5000, 512 );
+	// mirrorCubeCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
+	scene.add( mirrorCubeCamera );
+	var mirrorCubeMaterial = new THREE.MeshBasicMaterial( { envMap: mirrorCubeCamera.renderTarget } );
+	mirrorCube = new THREE.Mesh( cubeGeom, mirrorCubeMaterial );
+	mirrorCube.position.set(0,0,500);
+	mirrorCubeCamera.position = mirrorCube.position;
+	scene.add(mirrorCube);	
+//for mirror cube way easier, no import animation 3 lines
+
 	window.addEventListener( 'resize', onWindowResize, false );
 	document.body.appendChild(renderer.domElement);
-}//END init
+
+	}//END init
 
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
@@ -404,11 +464,12 @@ function animate() {
 	RB = gamePad.getButton(gamePad.RB);//left-right-buttons
 	LB = gamePad.getButton(gamePad.LB);
 
-	if(LVval > 0.3 || LVval < -0.3)p.position.z += LVval * 12;//Leftstick movement
-	if(LHval > 0.3 || LHval < -0.3)p.position.x += LHval * 12;
+/*	if(LVval > 0.3 || LVval < -0.3)camera.position.z += LVval * 12;//Leftstick movement
+	if(LHval > 0.3 || LHval < -0.3)camera.position.x += LHval * 12;
 
 	if(RVval > 0.1 || RVval < -0.1)camera.rotation.x -= RVval*0.025;//Rightstick movement
 	if(RHval > 0.1 || RHval < -0.1)camera.rotation.y -= RHval*0.025;
+*/
 
 	/*if ( gamePad.getButton(gamePad.A)==1 && flag ){
 	  p.position.y += 20;  
@@ -495,7 +556,7 @@ function animate() {
 		player_mesh.rotation.y += 0.003;
 		player_mesh.rotation.x += 0.003;
 		player_mesh.rotation.z += 0.001;
-		player_mesh.material.opacity = 0.42;
+		player_mesh.material.opacity = 0.22;
 	}
 
 	player_mesh.scale.set(a,a,a);
@@ -523,7 +584,7 @@ function animate() {
 
 		}
 	}
-	controls.update( Date.now() - time );
+	controls.update( Date.now() - time , gamePad);
 
 	renderer.render(scene, camera);
 
@@ -533,8 +594,18 @@ function animate() {
 }//END anim
 
 function render() {
+
+	mirrorCube.visible = false;
+	mirrorCubeCamera.updateCubeMap( renderer, scene );
+	mirrorCube.visible = true;
+
+	sphere.visible = false;
+	refractSphereCamera.updateCubeMap( renderer, scene );
+	sphere.visible = true;
+
 	renderer.render( scene, camera );
 }
+
 </script>
 </body>
 </html>

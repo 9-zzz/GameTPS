@@ -3,13 +3,12 @@
  */
 
 
-THREE.PointerLockControls = function ( camera , gamePad) {
+THREE.PointerLockControls = function ( camera ) {
+
+
+//TIM PREVIOUS CONTROLLER STATE
 
 	var scope = this;
-	if (gamePad == undefined) {
-		console.log("sdfasdfasdfasdfasdfasdf\n");
-	}
-
 	camera.rotation.set( 0, 0, 0 );
 
 	var pitchObject = new THREE.Object3D();
@@ -69,7 +68,8 @@ THREE.PointerLockControls = function ( camera , gamePad) {
 				break;
 
 			case 32: // space
-				if ( canJump === true ) velocity.y += 20;//three equals signs?
+				if ( canJump === true ) velocity.y += 30;//three equals signs?
+
 				canJump = false;
 				break;
 
@@ -103,6 +103,7 @@ THREE.PointerLockControls = function ( camera , gamePad) {
 
 			case 32: // space
 				velocity.y = velocity.y/2;
+
 				canJump = false;
 				break;
 
@@ -148,19 +149,35 @@ THREE.PointerLockControls = function ( camera , gamePad) {
 
 	}();
 
-	this.update = function ( delta ) {
+	this.update = function ( delta , gamePad) {
 
-//SHAHAN
-		if(scope.gamePad === undefined){ console.log("this thing is null");}
 
-		/*
-		var BA = gamePad.getButton(gamePad.A);
-		if ( BA == 1 && canJump == true){ velocity.y += 20;//three equals signs?
-				canJump = false;
-		}else if(BA == 0 && canJump == false){	velocity.y = velocity.y/2;
-		canJump = true;
-		}
-		*/
+
+	//gamePad.getButton(gamePad.START)
+
+/*	if (gamePad.getButton(gamePad.A)){ velocity.y += 20;
+	}else{
+			velocity.y -=3;
+	}
+*/
+
+	RTval = gamePad.getAxis(gamePad.RT);
+	LTval = gamePad.getAxis(gamePad.LT);
+	LVval = gamePad.getAxis(gamePad.LV);//leftStick output
+	LHval = gamePad.getAxis(gamePad.LH);
+	RVval = gamePad.getAxis(gamePad.RV);//rightStick output
+	RHval = gamePad.getAxis(gamePad.RH);
+	RB = gamePad.getButton(gamePad.RB);//left-right-buttons
+	LB = gamePad.getButton(gamePad.LB);
+
+	if(LVval > 0.3 || LVval < -0.3)camera.position.z += LVval * 12;//Leftstick movement
+	if(LHval > 0.3 || LHval < -0.3)camera.position.x += LHval * 12;
+
+	if(RVval > 0.1 || RVval < -0.1)camera.rotation.x -= RVval*0.025;//Rightstick movement
+	if(RHval > 0.1 || RHval < -0.1)camera.rotation.y -= RHval*0.025;
+
+
+
 
 
 
