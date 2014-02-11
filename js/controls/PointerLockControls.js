@@ -5,9 +5,6 @@
 
 THREE.PointerLockControls = function ( camera ) {
 
-
-//TIM PREVIOUS CONTROLLER STATE
-
 	var scope = this;
 	camera.rotation.set( 0, 0, 0 );
 
@@ -149,29 +146,47 @@ THREE.PointerLockControls = function ( camera ) {
 
 	}();
 
-	this.update = function ( delta , gamePad) {
+	/* Goals of this function:
+		1) Get the button events of the joystick and do something with it, such as update VELOCITY.
+		2) Use the VELOCITY to update the POSITION.
+		3) Reset everything and get ready for the next iteration of the update function.
+	 */
+	/* Specifications of Goals.<Step 1>:
+		If the user presses A, then the avatar goes into jump mode, iff he is allowed.
+		He is allowed iff he is not currently touching an object.
+		For now, this means if he is not already jumping.
+		He stops jumping when he touches a surface.
+	 */
+	this.update = function ( delta , gamePad ) {
+		/* Event: When a the state of the input changes from one value to another.
+		   Simulation of an Event:
+			1) Record the <current value>.
+			2) During the next iteration, move that <current value> to <previous value>.
+			3) Record the new <current value>.
+			4) If <current value> is not the same as <previous value> than an Event has occured.
+		 */
+		var previous = new Object();
+		var current = new Object();
 
+		// STEP 2: Move the current value to previous value
+		// NOTE: if this is the first time that this function is updating,
+		// then the previous object will still have nothing in it
+		for (var itemIndex in current) {
+			previous[itemIndex] = current[itemIndex];
+		}
 
+		// STEPS 1 and 3: Record the current value
+		current["RT"] = gamePad.getAxis(gamePad.RT);
+		current["LT"] = gamePad.getAxis(gamePad.LT);
+		current["LV"] = gamePad.getAxis(gamePad.LV);//leftStick output
+		current["LH"] = gamePad.getAxis(gamePad.LH);
+		current["RV"] = gamePad.getAxis(gamePad.RV);//rightStick output
+		current["RH"] = gamePad.getAxis(gamePad.RH);
+		current["RB"] = gamePad.getButton(gamePad.RB);//left-right-buttons
+		current["LB"] = gamePad.getButton(gamePad.LB);
 
-	//gamePad.getButton(gamePad.START)
-
-/*	if (gamePad.getButton(gamePad.A)){ velocity.y += 20;
-	}else{
-			velocity.y -=3;
-	}
-*/
-
-	RTval = gamePad.getAxis(gamePad.RT);
-	LTval = gamePad.getAxis(gamePad.LT);
-	LVval = gamePad.getAxis(gamePad.LV);//leftStick output
-	LHval = gamePad.getAxis(gamePad.LH);
-	RVval = gamePad.getAxis(gamePad.RV);//rightStick output
-	RHval = gamePad.getAxis(gamePad.RH);
-	RB = gamePad.getButton(gamePad.RB);//left-right-buttons
-	LB = gamePad.getButton(gamePad.LB);
-
-	if(LVval > 0.3 || LVval < -0.3)camera.position.z += LVval * 12;//Leftstick movement
-	if(LHval > 0.3 || LHval < -0.3)camera.position.x += LHval * 12;
+		if(current["LV"] > 0.3 || current["LV"] < -0.3)camera.position.z += LVval * 12;//Leftstick movement
+		if(LHval > 0.3 || LHval < -0.3)camera.position.x += LHval * 12;
 
 	if(RVval > 0.1 || RVval < -0.1)camera.rotation.x -= RVval*0.025;//Rightstick movement
 	if(RHval > 0.1 || RHval < -0.1)camera.rotation.y -= RHval*0.025;
