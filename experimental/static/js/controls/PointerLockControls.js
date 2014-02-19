@@ -70,7 +70,7 @@ THREE.PointerLockControls = function ( camera ) {
 
 			case 32: // space
 				if ( canJump === true ) {
-					velocity.y = 70;
+					velocity.y = 30;
 					console.log("JUMP");
 					canJump = false;
 				} else {
@@ -183,15 +183,17 @@ THREE.PointerLockControls = function ( camera ) {
 			3) Record the new <current value>.
 			4) If <current value> is not the same as <previous value> than an Event has occured.
 		 */
-		var buttons = ["LB", "RB"];
+		var buttons = ["LB", "RB", "A"];
 		var axes = ["RV", "RH", "RT", "LV", "LH", "LT"];
-		var events = {};
+		var buttonDown = {};
+		var buttonUp = {};
 
 		for (var buttonIndex in buttons) {
 			var button = buttons[buttonIndex];
 			previous[button] = current[button];
 			current[button] = gamePad.getButton(gamePad[button]);
-			events[button] = (previous[button] !== current[button]);
+			buttonDown[button] = (previous[button] !== current[button]) && current[button] == 1;
+			buttonUp[button] = (previous[button] !== current[button]) && current[button] == 0;
 		}
 		for (var axisIndex in axes) {
 			var axis = axes[axisIndex];
@@ -221,14 +223,17 @@ THREE.PointerLockControls = function ( camera ) {
 		}
 		
 		// rotate point of view
-		camera.rotation.x -= filterJoystick(current["RV"]) * 0.05;
-		camera.rotation.y -= filterJoystick(current["RH"]) * 0.05;
+		pitchObject.rotation.x -= filterJoystick(current["RV"]) * 0.05;
+		pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
+		yawObject.rotation.y -= filterJoystick(current["RH"]) * 0.05;
 		// camera.rotation.z = oculusrift; //lol change this
 		
 
+		delta *= 0.05;
+
 
 		// VELOCITY UPDATE
-		var max_speed = 0.12 * delta;
+		var max_speed = 2.4;
 		var LHMAP = filterJoystick(current["LH"]);
 		var LVMAP = filterJoystick(current["LV"]);
 		var absMax = function (x, y) {
@@ -243,38 +248,37 @@ THREE.PointerLockControls = function ( camera ) {
 							 (moveRight ? max_speed : 0), // right
 							 LHMAP * max_speed); // joystick
 
-		// This is the jump button mapping.
-/*		if ( canJump && !!events["A"] && !!current["A"] ) {
-			velocity.y = 70; // Impulse of the avatar
-			canJump = false; // control the event access for jumping
-		}*/
-
 		// gravity
-		velocity.y -= 20;
+		velocity.y -= 0.4 * delta;
+		// hit the floor or object
+		if (isOnObject || yawObject.position.y < 15) {
+			velocity.y = Math.max(0, velocity.y);
+			canJump = true;
+		}
+		// This is the jump button mapping.
+		if ( canJump && buttonDown["A"] ) {
+			console.log("A");
+			velocity.y = 30; // Impulse of the avatar
+			canJump = false; // control the event access for jumping
+		}
 
 		// terminal velocity
-		var terminalVelocity = 50;
+		var terminalVelocity = 20;
 		var velY = {};
 		velY.dir = velocity.y < 0 ? -1 : 1;
 		velY.mag = Math.abs(velocity.y);
-		if (velY.mag > terminalVelocity) {
+		if (velY.mag > terminalVelocity && velY.dir == -1) {
 			velY.mag = terminalVelocity;
 		}
 		velocity.y = velY.mag * velY.dir;
 
-		// hit the floor
-		if ( isOnObject && velY.dir == -1) {
-			console.log("STOP OBJECT");
-			velocity.y = 0;
-			canJump = true;
-		}
 
 		// POSITION UPDATE
-		yawObject.translateX( velocity.x );
+		yawObject.translateX( velocity.x * delta);
 		if (y_enabled) {
-			yawObject.translateY( velocity.y );
+			yawObject.translateY( velocity.y  * delta);
 		}
-		yawObject.translateZ( velocity.z );
+		yawObject.translateZ( velocity.z * delta);
 
 	};
 

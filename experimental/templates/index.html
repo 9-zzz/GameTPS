@@ -441,7 +441,7 @@ function onWindowResize() {
 function animate() {
 	requestAnimationFrame(animate);
 	//if ( keyboard.pressed("Q") ){//Stop rings
-	if ( RB || keyboard.pressed("Q")){//Stop rings and before var init?!?!RB?
+	//if ( RB || keyboard.pressed("Q")){//Stop rings and before var init?!?!RB?
 
 		ringplat.rotation.y /= 2;ringplat.rotation.z /= 2;  
 		ringplat.rotation.x /= 2;ringplat2.rotation.y /= 2;
@@ -450,8 +450,8 @@ function animate() {
 		ringplat3.rotation.x /= 2;ringplat4.rotation.y /= 2;
 		ringplat4.rotation.z /= 2;ringplat4.rotation.x /= 2;
 		ringplatsty2.rotation.y /=2;ringplatsty2.rotation.z /=2;
-		flag1 = false;
-	}
+		//flag1 = false;
+	//}
 
 	//XBOX CONTROLLER CODE HAD TO EXCLUDE THE KEYBOARD INPUT
 	RTval = gamePad.getAxis(gamePad.RT);
@@ -572,21 +572,20 @@ function animate() {
 
 	if ( intersections.length > 0 ) {
 
-		controls.enableYMovement();
+	//	controls.enableYMovement();
 
 		var distance = intersections[ 0 ].distance;
 		console.log(distance);
 
 		if ( distance > 0 && distance < 70 ) {
-			//if ( distance > 0 && distance < 10 ) 
 			controls.isOnObject( true );
 
 			p.add(winner);
 			winner.position.y = 12;
 
 		}
-	} else {
-		controls.disableYMovement();
+	//} else {
+	//	controls.disableYMovement();
 	}
 	controls.update( Date.now() - time , gamePad);
 
