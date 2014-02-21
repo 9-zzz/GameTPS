@@ -21,14 +21,15 @@ THREE.PointerLockControls = function ( camera ) {
 	var moveRight = false;
 
 	var isOnObject = false;
-	var canJump = false;
+	var canJump = true;
 
 	var velocity = new THREE.Vector3();
 
 	var PI_2 = Math.PI / 2;
 
-	var updatePrevious = {};
-	var updateCurrent = {};
+	var previous = {};
+	var current = {};
+	var y_enabled = true;
 
 	var onMouseMove = function ( event ) {
 
@@ -68,9 +69,14 @@ THREE.PointerLockControls = function ( camera ) {
 				break;
 
 			case 32: // space
-				if ( canJump === true ) velocity.y += 30;//three equals signs?
-
-				canJump = false;
+				if ( canJump === true ) {
+					velocity.y = 30;
+					console.log("JUMP");
+					canJump = false;
+				} else {
+					console.log("CANT JUMP");
+				}
+				console.log("SPACE");
 				break;
 
 		}
@@ -102,9 +108,10 @@ THREE.PointerLockControls = function ( camera ) {
 				break;
 
 			case 32: // space
-				velocity.y = velocity.y/2;
+				console.log("SPACE OUT");
+				//velocity.y = velocity.y/2;
 
-				canJump = false;
+				//canJump = false;
 				break;
 
 		}
@@ -121,6 +128,14 @@ THREE.PointerLockControls = function ( camera ) {
 
 		return yawObject;
 
+	};
+	
+	this.disableYMovement = function() {
+		y_enabled = false;
+	};
+
+	this.enableYMovement = function() {
+		y_enabled = true;
 	};
 
 	this.isOnObject = function ( boolean ) {
@@ -168,22 +183,22 @@ THREE.PointerLockControls = function ( camera ) {
 			3) Record the new <current value>.
 			4) If <current value> is not the same as <previous value> than an Event has occured.
 		 */
-		var previous = scope.updatePrevious;
-		var current = scope.updateCurrent;
-		var buttons = ["LB", "RB"];
+		var buttons = ["LB", "RB", "A"];
 		var axes = ["RV", "RH", "RT", "LV", "LH", "LT"];
-		var events = {};
+		var buttonDown = {};
+		var buttonUp = {};
 
 		for (var buttonIndex in buttons) {
 			var button = buttons[buttonIndex];
 			previous[button] = current[button];
-			current[button] = gamepad.getButton(gamepad[button]);
-			events[button] = (previous[button] !== current[button]);
+			current[button] = gamePad.getButton(gamePad[button]);
+			buttonDown[button] = (previous[button] !== current[button]) && current[button] == 1;
+			buttonUp[button] = (previous[button] !== current[button]) && current[button] == 0;
 		}
 		for (var axisIndex in axes) {
 			var axis = axes[axisIndex];
 			previous[axis] = current[axis];
-			current[axis] = gamepad.getAxis(gamepad[axis]);
+			current[axis] = gamePad.getAxis(gamePad[axis]);
 		}
 
 		/* Filter: the filter is just an equation, where middle values are given more precedence
@@ -191,87 +206,79 @@ THREE.PointerLockControls = function ( camera ) {
 		   This is implemented in order to prevent movement which one does not want.
 		 */
 		var filterJoystick = function(s) {
+			var dir = s < 0 ? -1 : 1;
+			s = Math.abs(s);
 			var x = Math.pow(10, 5 * s); // Logarithmic progression
 			var s_sq = Math.pow(x, 2); // Corner behavior
 			var y = (s_sq / 1000 + 1) / (s_sq / 10000000 + 1); // Signal application
 			y = Math.log(y) / (Math.log(10) * 4); // Logarithmic application
-			return y;
+			return y * dir;
 		};
 
-		/* Map Camera:
-			The camera can be adjusted on the following axes:
-			position:
-				x >					<< LH
-				y ^
-				z .					<< LV
+		/*	position:	x >		y ^		z .
 			rotation: NORMAL TO ALL THE POSITION VECTORS
-				x > N				<< RV
-				y ^ N				<< RH
-				z . N
 		 */
 		if ( scope.enabled === false ) {
 			return;
 		}
-		camera.position.x += filterJoystick(current["LH"]) * 12;
-		camera.position.z += filterJoystick(current["LV"]) * 12;
-		camera.rotation.x -= filterJoystick(current["RV"]) * 0.025;
-		camera.rotation.y -= filterJoystick(current["RH"]) * 0.025;
+		
+		// rotate point of view
+		pitchObject.rotation.x -= filterJoystick(current["RV"]) * 0.05;
+		pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
+		yawObject.rotation.y -= filterJoystick(current["RH"]) * 0.05;
+		// camera.rotation.z = oculusrift; //lol change this
+		
 
-		/*
-			Note: velocity is change in position apparently
-		 */
-
-		 var absMax = function (x, y) {
-		 	return (Math.abs(x) > Math.abs(y)) ? x : y;
-		 }
-
-		// TIME UPDATE
 		delta *= 0.05;
 
+
 		// VELOCITY UPDATE
-		//velocity.x += ( - velocity.x ) * 0.08 * delta;
-		//velocity.z += ( - velocity.z ) * 0.08 * delta;
-		//velocity.y -= (0.25 * delta)*0.05;
+		var max_speed = 2.4;
+		var LHMAP = filterJoystick(current["LH"]);
+		var LVMAP = filterJoystick(current["LV"]);
+		var absMax = function (x, y) {
+			return (Math.abs(x) > Math.abs(y)) ? x : y;
+		};
 
-		// This is the acceleration vector due to gravity.
-		velocity.y -= 0.25 * delta;
+		velocity.z = absMax( (moveForward ? -max_speed : 0) + // forward
+							 (moveBackward ? max_speed : 0), // backward
+							 LVMAP * max_speed); // joystick
 
-                //default is velocity = 0.12
-		velocity.z += absMax((moveForward ? -0.4 * delta : 0) +
-							 (moveBackward ? 0.4 * delta : 0),
-							0.4 * delta * filterJoystick(current["LV"]));
+		velocity.x = absMax( (moveLeft ? -max_speed : 0) + // left
+							 (moveRight ? max_speed : 0), // right
+							 LHMAP * max_speed); // joystick
 
-		velocity.x += absMax((moveLeft ? -0.4 * delta : 0) +
-							 (moveRight ? 0.4 * delta : 0),
-							0.4 * delta * filterJoystick(current["LH"]));
-
-		if ( isOnObject === true ) {
-			velocity.y = Math.max( 0, velocity.y );
+		// gravity
+		velocity.y -= 0.4 * delta;
+		// hit the floor or object
+		if (isOnObject || yawObject.position.y < 15) {
+			velocity.y = Math.max(0, velocity.y);
+			canJump = true;
 		}
-
-		if ( yawObject.position.y < 10 ) {
-
-			velocity.y = 0;
-			yawObject.position.y = 10;
-
-			scope.canJump = true;
-
-		}
-
 		// This is the jump button mapping.
-		if ( scope.canJump && events["A"] && current["A"] ) {
-			velocity.y = 100; // Impulse of the avatar
-			scope.canJump = false; // control the event access for jumping
+		if ( canJump && buttonDown["A"] ) {
+			console.log("A");
+			velocity.y = 30; // Impulse of the avatar
+			canJump = false; // control the event access for jumping
 		}
+
+		// terminal velocity
+		var terminalVelocity = 20;
+		var velY = {};
+		velY.dir = velocity.y < 0 ? -1 : 1;
+		velY.mag = Math.abs(velocity.y);
+		if (velY.mag > terminalVelocity && velY.dir == -1) {
+			velY.mag = terminalVelocity;
+		}
+		velocity.y = velY.mag * velY.dir;
+
 
 		// POSITION UPDATE
-		yawObject.translateX( velocity.x );
-		yawObject.translateY( velocity.y ); 
-		yawObject.translateZ( velocity.z );
-
-		// Reset and get ready for next iteration
-		scope.updatePrevious = previous;
-		scope.updateCurrent = current;
+		yawObject.translateX( velocity.x * delta);
+		if (y_enabled) {
+			yawObject.translateY( velocity.y  * delta);
+		}
+		yawObject.translateZ( velocity.z * delta);
 
 	};
 
