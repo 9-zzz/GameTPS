@@ -83,7 +83,7 @@ Shahan Akhter - <a href="https://github.com/s-haha-n"target="_blank">GitHub.com/
 </h3>
 <audio controls loop align="right">
 <embed  align="right"</embed>
-<source src="audio/NANANANA.mp3" type="audio/mpeg">
+<source src="audio/Synchretik-Spin-Doctor.mp3" type="audio/mpeg">
 Your browser does not support the audio element BRO!
 </audio>
 </div>
@@ -112,7 +112,7 @@ var flag1;
 var LTval, RTval, LVval, LHval, RVval, RHval, RB,LB;//XBOX VARS
 var gamePad, mov7, mat , geo, viewM;
 var camera, scene, renderer, controls, ray, world, body, mass, shape, timeStep = 1/60;
-var winner,  bullet;
+var winner,  bullet, u;
 var a = 1;
 var geometry, material, mesh;
 var time = Date.now();
@@ -277,7 +277,7 @@ function init() {
 			materials[i].shading = THREE.FlatShading;
 			}
 			var material = new THREE.MeshFaceMaterial({shading: THREE.FlatShading});
-			var  u = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+			u = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 			//  var  u = new THREE.Mesh(geometry, materials);
 			u.scale.set(6, 6, 6);
 			u.position.set(0, 0, -90);
@@ -416,15 +416,22 @@ function init() {
 	//for bubble end
 
 //for mirror cube way easier, no import animation 3 lines
-var cubeGeom = new THREE.CubeGeometry(100, 100, 10, 1, 1, 1);
+var cubeGeom = new THREE.CubeGeometry(500, 500, 10, 1, 1, 1);
 	mirrorCubeCamera = new THREE.CubeCamera( 0.1, 5000, 512 );
+	mirrorCubeCamera2 = new THREE.CubeCamera( 0.1, 5000, 512 );
 	// mirrorCubeCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
 	scene.add( mirrorCubeCamera );
+	scene.add( mirrorCubeCamera2 );
 	var mirrorCubeMaterial = new THREE.MeshBasicMaterial( { envMap: mirrorCubeCamera.renderTarget } );
+	var mirrorCubeMaterial2 = new THREE.MeshBasicMaterial( { envMap: mirrorCubeCamera2.renderTarget } );
 	mirrorCube = new THREE.Mesh( cubeGeom, mirrorCubeMaterial );
-	mirrorCube.position.set(0,0,500);
+	mirrorCube2 = new THREE.Mesh( cubeGeom, mirrorCubeMaterial2 );
+	mirrorCube.position.set(0,0,400);
+	mirrorCube2.position.set(0,0,700);
 	mirrorCubeCamera.position = mirrorCube.position;
+	mirrorCubeCamera2.position = mirrorCube2.position;
 	scene.add(mirrorCube);	
+	scene.add(mirrorCube2);	
 //for mirror cube way easier, no import animation 3 lines
 
 	window.addEventListener( 'resize', onWindowResize, false );
@@ -441,6 +448,14 @@ function onWindowResize() {
 function animate() {
 
 	requestAnimationFrame(animate);
+
+	u.position.y += (Math.sin( new Date().getTime() * 0.007 ))*0.03;
+	u.position.x += (Math.sin( new Date().getTime() * 0.007 ))*0.03;
+	u.position.z += (Math.sin( new Date().getTime() * 0.007 ))*0.03;
+	u.rotation.y += (Math.sin( new Date().getTime() * 0.007 ))*0.03;
+	u.rotation.x += (Math.sin( new Date().getTime() * 0.007 ))*0.03;
+	u.rotation.z += (Math.sin( new Date().getTime() * 0.007 ))*0.03;
+
 	//if ( keyboard.pressed("Q") ){//Stop rings
 	if ( RB || keyboard.pressed("Q")){//Stop rings and before var init?!?!RB?
 
@@ -463,23 +478,6 @@ function animate() {
 	RHval = gamePad.getAxis(gamePad.RH);
 	RB = gamePad.getButton(gamePad.RB);//left-right-buttons
 	LB = gamePad.getButton(gamePad.LB);
-
-/*	if(LVval > 0.3 || LVval < -0.3)camera.position.z += LVval * 12;//Leftstick movement
-	if(LHval > 0.3 || LHval < -0.3)camera.position.x += LHval * 12;
-
-	if(RVval > 0.1 || RVval < -0.1)camera.rotation.x -= RVval*0.025;//Rightstick movement
-	if(RHval > 0.1 || RHval < -0.1)camera.rotation.y -= RHval*0.025;
-*/
-
-	/*if ( gamePad.getButton(gamePad.A)==1 && flag ){
-	  p.position.y += 20;  
-	  flag = false;
-	//flag = false;
-	}else{ 
-	p.position.y /= 1.1;
-	flag = true;
-	}//JUMP
-	 */
 
 	if(RTval>0){ bullet.position.z += -RTval }else{ bullet.position.z /= 2;} //Right Trigger launch
 
@@ -598,6 +596,11 @@ function render() {
 	mirrorCube.visible = false;
 	mirrorCubeCamera.updateCubeMap( renderer, scene );
 	mirrorCube.visible = true;
+        
+        mirrorCube2.visible = false;
+	mirrorCubeCamera2.updateCubeMap( renderer, scene );
+	mirrorCube2.visible = true;
+
 
 	sphere.visible = false;
 	refractSphereCamera.updateCubeMap( renderer, scene );
